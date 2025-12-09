@@ -59,5 +59,4 @@ Start the backend and frontend servers:
 
 npm run dev
 
-
 CodeClash is ideal for developers looking to practice competitive programming, organize coding contests, or learn full-stack development with modern tools.
