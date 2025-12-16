@@ -1,8 +1,11 @@
 package com.codeclash.controller;
 
+import com.codeclash.config.RateLimitConfig;
 import com.codeclash.dto.CodeExecutionRequest;
 import com.codeclash.dto.CodeExecutionResponse;
 import com.codeclash.service.CodeExecutionService;
+import io.github.bucket4j.Bucket;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +18,25 @@ public class CodeExecutionController {
 
     @Autowired
     private CodeExecutionService codeExecutionService;
+    
+    @Autowired
+    private RateLimitConfig rateLimitConfig;
 
     @PostMapping("/execute")
-    public ResponseEntity<CodeExecutionResponse> executeCode(@RequestBody CodeExecutionRequest request) {
+    public ResponseEntity<CodeExecutionResponse> executeCode(
+            @RequestBody CodeExecutionRequest request,
+            HttpServletRequest httpRequest) {
+        
+        // Rate limiting: 10 requests per minute per IP
+        String clientIp = getClientIp(httpRequest);
+        Bucket bucket = rateLimitConfig.resolveBucket(clientIp);
+        
+        if (!bucket.tryConsume(1)) {
+            CodeExecutionResponse rateLimitResponse = CodeExecutionResponse.error(
+                "Rate limit exceeded. Please wait before making another request.");
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(rateLimitResponse);
+        }
+        
         try {
             CodeExecutionResponse response = codeExecutionService.executeCode(request);
             
@@ -31,8 +50,17 @@ public class CodeExecutionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+    
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("OK");
+    }
+    
+    private String getClientIp(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }
