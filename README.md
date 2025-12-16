@@ -10,6 +10,8 @@ An online code execution platform for competitive programming practice. Write, c
 - **Real-Time Execution** — Compile and run code with instant output
 - **Custom Input** — Provide stdin input for your programs
 - **Execution Metrics** — Track execution time for each run
+- **Rate Limiting** — 10 requests per minute per IP address
+- **Docker Sandboxing** — Optional isolated execution in Docker containers
 
 ### Planned Features
 - User authentication
@@ -23,7 +25,7 @@ An online code execution platform for competitive programming practice. Write, c
 |-------|------------|
 | **Frontend** | React 19, Vite, TypeScript, TailwindCSS, Monaco Editor |
 | **Backend** | Spring Boot 3.2, Java 17 |
-| **Code Execution** | OS processes (python3, javac, node, gcc, g++) |
+| **Code Execution** | Direct OS processes or Docker containers (configurable) |
 | **Monorepo** | Turborepo + npm workspaces |
 
 ## Architecture
@@ -35,18 +37,18 @@ An online code execution platform for competitive programming practice. Write, c
 ├─────────────────────────┤     ├─────────────────────────┤
 │ • Monaco Code Editor    │     │ • POST /api/execute     │
 │ • Language Selector     │     │ • GET  /api/health      │
-│ • Input/Output Panel    │     │                         │
+│ • Input/Output Panel    │     │ • Rate Limiting         │
 └─────────────────────────┘     └─────────────────────────┘
                                           │
                                           ▼
                                 ┌─────────────────────────┐
-                                │   Code Execution        │
+                                │   Code Execution Router │
                                 ├─────────────────────────┤
-                                │ 1. Create temp file     │
-                                │ 2. Compile (if needed)  │
-                                │ 3. Execute process      │
-                                │ 4. Return output        │
-                                │ 5. Cleanup temp files   │
+                                │ mode=direct │ mode=docker│
+                                │     ↓       │     ↓      │
+                                │  OS Process │  Docker    │
+                                │  (dev)      │  Container │
+                                │             │  (prod)    │
                                 └─────────────────────────┘
 ```
 
@@ -67,13 +69,17 @@ codeclash/
 │   └── backend-springboot/       # Spring Boot API
 │       └── src/main/java/com/codeclash/
 │           ├── controller/
+│           │   └── CodeExecutionController.java
 │           ├── service/
-│           ├── model/
-│           └── repository/
+│           │   ├── CodeExecutionService.java      # Direct execution
+│           │   ├── DockerCodeExecutionService.java # Docker execution
+│           │   └── CodeExecutionRouter.java       # Routes based on config
+│           ├── config/
+│           │   └── RateLimitConfig.java
+│           └── dto/
 │
 ├── packages/                     # Shared packages
-│   ├── db/                       # Prisma schema
-│   ├── ui/                       # Shared UI components
+│   ├── eslint-config/
 │   └── typescript-config/
 │
 ├── package.json
@@ -122,7 +128,8 @@ codeclash/
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/execute` | Execute code |
+| POST | `/api/execute` | Execute code (rate limited: 10 req/min per IP) |
+| GET | `/api/health` | Health check (shows execution mode) |
 
 ### Execute Code Request
 ```json
@@ -158,16 +165,50 @@ codeclash/
 Backend configuration in `apps/backend-springboot/src/main/resources/application.properties`:
 
 ```properties
+# Server port
 server.port=4000
+
+# Code Execution Mode
+# "direct" - Direct OS process execution (for development, no Docker required)
+# "docker" - Sandboxed Docker container execution (for production)
+codeclash.execution.mode=direct
 ```
 
-## Security Considerations
+### Execution Modes
 
-> **Warning:** This project executes arbitrary user code on the server. For production deployment, consider:
-> - Sandboxed execution (Docker containers)
-> - Rate limiting
-> - Authentication on code execution endpoints
-> - Resource limits (CPU, memory, time)
+| Mode | Use Case | Security | Requirements |
+|------|----------|----------|-------------|
+| `direct` | Development/Testing | Low (no sandboxing) | python3, node, gcc, javac |
+| `docker` | Production | High (isolated containers) | Docker daemon running |
+
+## Security Features
+
+### Implemented
+- **Rate Limiting** — 10 requests per minute per IP (using Bucket4j)
+- **Docker Sandboxing** — Isolated container execution with:
+  - Memory limit: 128MB
+  - CPU limit: 0.5 cores
+  - Network: Disabled
+  - Filesystem: Read-only
+  - Process limit: 50 PIDs (prevents fork bombs)
+  - Timeout: 10 seconds
+- **Execution Timeout** — 10 second limit per execution
+
+### Production Deployment
+
+For production, set `codeclash.execution.mode=docker` and pull required images:
+
+```bash
+docker pull python:3.11-slim
+docker pull node:18-slim
+docker pull openjdk:17-slim
+docker pull gcc:latest
+```
+
+### Remaining Considerations
+- Authentication on code execution endpoints
+- HTTPS/TLS encryption
+- Logging and monitoring
 
 ## License
 
