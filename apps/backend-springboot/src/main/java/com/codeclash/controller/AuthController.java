@@ -3,7 +3,6 @@ package com.codeclash.controller;
 import com.codeclash.model.SignupRequest;
 import com.codeclash.model.User;
 import com.codeclash.repository.UserRepository;
-import com.codeclash.service.EmailService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,9 +19,6 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
-    
-    @Autowired
-    private EmailService emailService; // Configured but unused - matches original Express backend behavior
 
     @PostMapping("/signup")
     public ResponseEntity<Map<String, Object>> signup(@Valid @RequestBody SignupRequest signupRequest) {
