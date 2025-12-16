@@ -3,7 +3,7 @@ package com.codeclash.controller;
 import com.codeclash.config.RateLimitConfig;
 import com.codeclash.dto.CodeExecutionRequest;
 import com.codeclash.dto.CodeExecutionResponse;
-import com.codeclash.service.CodeExecutionService;
+import com.codeclash.service.CodeExecutionRouter;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class CodeExecutionController {
 
     @Autowired
-    private CodeExecutionService codeExecutionService;
+    private CodeExecutionRouter codeExecutionRouter;
     
     @Autowired
     private RateLimitConfig rateLimitConfig;
@@ -38,7 +38,7 @@ public class CodeExecutionController {
         }
         
         try {
-            CodeExecutionResponse response = codeExecutionService.executeCode(request);
+            CodeExecutionResponse response = codeExecutionRouter.executeCode(request);
             
             if (response.isSuccess()) {
                 return ResponseEntity.ok(response);
@@ -53,7 +53,7 @@ public class CodeExecutionController {
     
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("OK");
+        return ResponseEntity.ok("OK - Execution mode: " + codeExecutionRouter.getExecutionMode());
     }
     
     private String getClientIp(HttpServletRequest request) {
