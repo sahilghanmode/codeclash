@@ -1,0 +1,14 @@
+{
+  "name": "backend-springboot",
+  "version": "1.0.0",
+  "description": "CodeClash Spring Boot Backend",
+  "scripts": {
+    "dev": "mvn spring-boot:run",
+    "build": "mvn clean package",
+    "start": "java -jar target/backend-springboot-1.0.0.jar",
+    "test": "mvn test"
+  },
+  "keywords": ["spring-boot", "java", "codeclash"],
+  "author": "",
+  "license": "ISC"
+}
