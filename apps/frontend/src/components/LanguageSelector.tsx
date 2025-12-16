@@ -1,5 +1,4 @@
 import React from 'react';
-import { FaCode } from 'react-icons/fa';
 
 interface LanguageSelectorProps {
   selectedLanguage: string;
@@ -12,9 +11,6 @@ const languages = [
   { id: 'java', name: 'Java', monacoId: 'java' },
   { id: 'cpp', name: 'C++', monacoId: 'cpp' },
   { id: 'c', name: 'C', monacoId: 'c' },
-  { id: 'csharp', name: 'C#', monacoId: 'csharp' },
-  { id: 'go', name: 'Go', monacoId: 'go' },
-  { id: 'rust', name: 'Rust', monacoId: 'rust' },
 ];
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ 
@@ -23,7 +19,6 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 }) => {
   return (
     <div className="flex items-center space-x-2">
-      <FaCode className="w-5 h-5 text-gray-400" />
       <select
         value={selectedLanguage}
         onChange={(e) => onLanguageChange(e.target.value)}

@@ -29,9 +29,6 @@ public class Main {
       'java': 'java',
       'cpp': 'cpp',
       'c': 'c',
-      'csharp': 'csharp',
-      'go': 'go',
-      'rust': 'rust',
     };
     return languageMap[languageId] || 'plaintext';
   };
@@ -63,26 +60,6 @@ int main() {
     printf("Hello, World!\\n");
     return 0;
 }`,
-      'csharp': `// Welcome to CodeClash - C#
-using System;
-
-class Program {
-    static void Main() {
-        Console.WriteLine("Hello, World!");
-    }
-}`,
-      'go': `// Welcome to CodeClash - Go
-package main
-
-import "fmt"
-
-func main() {
-    fmt.Println("Hello, World!")
-}`,
-      'rust': `// Welcome to CodeClash - Rust
-fn main() {
-    println!("Hello, World!");
-}`,
     };
     return defaultCodes[languageId] || '// Start coding here...';
   };
@@ -98,14 +75,14 @@ fn main() {
     setOutput('Compiling and running your code...\n');
 
     try {
-      const response = await axios.post('http://localhost:3000/api/execute', {
+      const response = await axios.post('http://localhost:4000/api/execute', {
         code,
         language: selectedLanguage,
         input
       });
 
       if (response.data.success) {
-        setOutput(response.data.output + `\n\nExecution time: ${response.data.executionTime}ms`);
+        setOutput(response.data.output + `\n\n\nExecution time: ${response.data.executionTime}ms`);
       } else {
         setOutput('Error: ' + response.data.error);
       }
