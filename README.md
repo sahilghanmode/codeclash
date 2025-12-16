@@ -10,14 +10,12 @@ An online code execution platform for competitive programming practice. Write, c
 - **Real-Time Execution** — Compile and run code with instant output
 - **Custom Input** — Provide stdin input for your programs
 - **Execution Metrics** — Track execution time for each run
-- **User Signup** — Basic user registration API
 
 ### Planned Features
-- User authentication (login/JWT)
-- Problem management (CRUD)
+- User authentication
+- Problem management
 - Code submissions & history
 - Contests & leaderboards
-- Admin panel
 
 ## Tech Stack
 
@@ -25,7 +23,6 @@ An online code execution platform for competitive programming practice. Write, c
 |-------|------------|
 | **Frontend** | React 19, Vite, TypeScript, TailwindCSS, Monaco Editor |
 | **Backend** | Spring Boot 3.2, Java 17 |
-| **Database** | H2 (dev) / PostgreSQL (prod) |
 | **Code Execution** | OS processes (python3, javac, node, gcc, g++) |
 | **Monorepo** | Turborepo + npm workspaces |
 
@@ -37,8 +34,8 @@ An online code execution platform for competitive programming practice. Write, c
 │   localhost:5173        │────▶│  localhost:4000         │
 ├─────────────────────────┤     ├─────────────────────────┤
 │ • Monaco Code Editor    │     │ • POST /api/execute     │
-│ • Language Selector     │     │ • POST /api/auth/signup │
-│ • Input/Output Panel    │     │ • GET  /api/auth/health │
+│ • Language Selector     │     │ • GET  /api/health      │
+│ • Input/Output Panel    │     │                         │
 └─────────────────────────┘     └─────────────────────────┘
                                           │
                                           ▼
@@ -126,8 +123,6 @@ codeclash/
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/execute` | Execute code |
-| POST | `/api/auth/signup` | Register new user |
-| GET | `/api/auth/health` | Health check |
 
 ### Execute Code Request
 ```json
@@ -164,8 +159,6 @@ Backend configuration in `apps/backend-springboot/src/main/resources/application
 
 ```properties
 server.port=4000
-spring.datasource.url=jdbc:h2:mem:testdb
-spring.jpa.hibernate.ddl-auto=create-drop
 ```
 
 ## Security Considerations
