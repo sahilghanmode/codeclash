@@ -1,13 +1,9 @@
 package com.codeclash.dto;
 
-import jakarta.validation.constraints.NotBlank;
-
 public class CodeExecutionRequest {
     
-    @NotBlank(message = "Code cannot be empty")
     private String code;
     
-    @NotBlank(message = "Language cannot be empty")
     private String language;
     
     private String input;

@@ -1,64 +1,182 @@
-CodeClash
+# CodeClash
 
-CodeClash is a modern, full-stack competitive programming platform inspired by Codeforces. Built with MERN stack, PostgreSQL, Prisma, and Turborepo, it allows users to practice, compete, and improve their algorithmic skills through coding contests and problem-solving challenges.
+An online code execution platform for competitive programming practice. Write, compile, and run code in multiple languages directly in your browser.
 
-Features
+## Features
 
-User Authentication – Secure signup, login, and JWT-based sessions.
+### Currently Implemented
+- **Online Code Editor** — Monaco-based editor with syntax highlighting
+- **Multi-Language Support** — Java, Python, C, C++, JavaScript
+- **Real-Time Execution** — Compile and run code with instant output
+- **Custom Input** — Provide stdin input for your programs
+- **Execution Metrics** — Track execution time for each run
 
-Problem Management – Add, edit, and categorize coding problems.
+### Planned Features
+- User authentication
+- Problem management
+- Code submissions & history
+- Contests & leaderboards
 
-Contests & Submissions – Create contests, submit solutions, and track progress.
+## Tech Stack
 
-Leaderboard & Rankings – Real-time scoring and ranking of participants.
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React 19, Vite, TypeScript, TailwindCSS, Monaco Editor |
+| **Backend** | Spring Boot 3.2, Java 17 |
+| **Code Execution** | OS processes (python3, javac, node, gcc, g++) |
+| **Monorepo** | Turborepo + npm workspaces |
 
-Admin Panel – Manage users, problems, and contests.
+## Architecture
 
-Reusable Architecture – Built with Turborepo for monorepo management, allowing scalable modular development.
+```
+┌─────────────────────────┐     ┌─────────────────────────┐
+│   Frontend (React)      │     │  Backend (Spring Boot)  │
+│   localhost:5173        │────▶│  localhost:4000         │
+├─────────────────────────┤     ├─────────────────────────┤
+│ • Monaco Code Editor    │     │ • POST /api/execute     │
+│ • Language Selector     │     │ • GET  /api/health      │
+│ • Input/Output Panel    │     │                         │
+└─────────────────────────┘     └─────────────────────────┘
+                                          │
+                                          ▼
+                                ┌─────────────────────────┐
+                                │   Code Execution        │
+                                ├─────────────────────────┤
+                                │ 1. Create temp file     │
+                                │ 2. Compile (if needed)  │
+                                │ 3. Execute process      │
+                                │ 4. Return output        │
+                                │ 5. Cleanup temp files   │
+                                └─────────────────────────┘
+```
 
-Database Powered by PostgreSQL & Prisma – Efficient, type-safe ORM for data management.
+## Project Structure
 
-Tech Stack
+```
+codeclash/
+├── apps/
+│   ├── frontend/                 # React + Vite + TailwindCSS
+│   │   └── src/
+│   │       ├── components/
+│   │       │   ├── CodeExecution.tsx
+│   │       │   ├── CodeEditor.tsx
+│   │       │   ├── InputOutput.tsx
+│   │       │   └── LanguageSelector.tsx
+│   │       └── App.tsx
+│   │
+│   └── backend-springboot/       # Spring Boot API
+│       └── src/main/java/com/codeclash/
+│           ├── controller/
+│           ├── service/
+│           ├── model/
+│           └── repository/
+│
+├── packages/                     # Shared packages
+│   ├── db/                       # Prisma schema
+│   ├── ui/                       # Shared UI components
+│   └── typescript-config/
+│
+├── package.json
+└── turbo.json
+```
 
-Frontend: React.js (optional Next.js for SSR)
+## Getting Started
 
-Backend: Node.js + Express + TypeScript
+### Prerequisites
+- Node.js >= 18
+- Java 17
+- Maven 3.8+
+- Compilers: `python3`, `gcc`, `g++` (for code execution)
 
-Database: PostgreSQL
+### Installation
 
-ORM: Prisma
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/sahilghanmode/codeclash.git
+   cd codeclash
+   ```
 
-Monorepo Management: Turborepo
+2. **Install frontend dependencies**
+   ```bash
+   cd apps/frontend
+   npm install
+   ```
 
-Authentication: JWT + Bcrypt
+3. **Start the backend** (in one terminal)
+   ```bash
+   cd apps/backend-springboot
+   mvn spring-boot:run
+   ```
+   Backend runs on `http://localhost:4000`
 
-Getting Started
+4. **Start the frontend** (in another terminal)
+   ```bash
+   cd apps/frontend
+   npm run dev
+   ```
+   Frontend runs on `http://localhost:5173`
 
-Clone the repository:
+5. **Open your browser** and go to `http://localhost:5173`
 
-git clone https://github.com/your-username/codeclash.git
+## API Endpoints
 
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/execute` | Execute code |
 
-Install dependencies:
+### Execute Code Request
+```json
+{
+  "code": "print('Hello, World!')",
+  "language": "python",
+  "input": ""
+}
+```
 
-npm install
+### Execute Code Response
+```json
+{
+  "success": true,
+  "output": "Hello, World!",
+  "executionTime": 42,
+  "timestamp": "2024-12-16T15:00:00"
+}
+```
 
+## Supported Languages
 
-Setup PostgreSQL (Docker recommended).
+| Language | Compiler/Interpreter |
+|----------|---------------------|
+| Java | `javac` + `java` |
+| Python | `python3` |
+| JavaScript | `node` |
+| C | `gcc` |
+| C++ | `g++` |
 
-Configure .env with your DATABASE_URL.
+## Configuration
 
-Run migrations and generate Prisma client:
+Backend configuration in `apps/backend-springboot/src/main/resources/application.properties`:
 
-cd packages/db
-npm run migrate
-npm run dev
+```properties
+server.port=4000
+```
 
+## Security Considerations
 
-Start the backend and frontend servers:
+> **Warning:** This project executes arbitrary user code on the server. For production deployment, consider:
+> - Sandboxed execution (Docker containers)
+> - Rate limiting
+> - Authentication on code execution endpoints
+> - Resource limits (CPU, memory, time)
 
-npm run dev
+## License
 
-CodeClash is ideal for developers looking to practice competitive programming, organize coding contests, or learn full-stack development with modern tools.
+MIT
 
+## Contributing
 
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
